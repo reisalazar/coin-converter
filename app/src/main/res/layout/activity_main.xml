@@ -63,8 +63,10 @@
 
 
         <androidx.appcompat.widget.AppCompatAutoCompleteTextView
+            android:id="@+id/tv_from"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:focusable="false"
             android:inputType="none" />
 
 
@@ -84,6 +86,7 @@
 
 
         <androidx.appcompat.widget.AppCompatAutoCompleteTextView
+            android:id="@+id/tv_to"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:inputType="none" />
@@ -92,9 +95,11 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_converter"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/layout_padding"
+        android:enabled="false"
         android:text="Converter"
         app:layout_constraintEnd_toEndOf="@id/guide_end"
         app:layout_constraintStart_toStartOf="@id/guide_start"
