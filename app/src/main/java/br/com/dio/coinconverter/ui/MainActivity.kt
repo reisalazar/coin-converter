@@ -1,16 +1,21 @@
 package br.com.dio.coinconverter.ui
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.AppCompatAutoCompleteTextView
-import androidx.appcompat.widget.AppCompatEditText
 import androidx.core.widget.doAfterTextChanged
+import br.com.dio.coinconverter.core.extensions.createDialog
+import br.com.dio.coinconverter.core.extensions.createProgressDialog
 import br.com.dio.coinconverter.data.model.Coin
 import br.com.dio.coinconverter.databinding.ActivityMainBinding
+import br.com.dio.coinconverter.presentation.MainViewModel
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : AppCompatActivity() {
 
+    private val viewModel by viewModel<MainViewModel>()
+    private val dialog by lazy { createProgressDialog() }
     private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -19,6 +24,23 @@ class MainActivity : AppCompatActivity() {
 
         bindingAdapters()
         bindingListeners()
+
+        viewModel.getExchangeValue("USD-BRL")
+        viewModel.state.observe(this) {
+            when (it) {
+                MainViewModel.State.Loading -> dialog.show()
+                is MainViewModel.State.Error -> {
+                    dialog.dismiss()
+                    createDialog {
+                        setMessage(it.throwable.message)
+                    }.show()
+                }
+                is MainViewModel.State.Success -> {
+                    dialog.dismiss()
+                    Log.e("TAG", "onCreate:  ${it.value}")
+                }
+            }
+        }
 
 
     }
