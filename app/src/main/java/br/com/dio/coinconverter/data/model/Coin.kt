@@ -1,11 +1,13 @@
 package br.com.dio.coinconverter.data.model
 
-enum class Coin {
+import java.util.*
 
-    USD,
-    GBP,
-    CAD,
-    BRL,
-    ARS
+enum class Coin( val locale: Locale) {
+
+    USD(Locale.US),
+    GBP(Locale.ENGLISH),
+    CAD(Locale.CANADA),
+    BRL(Locale("pt", "BR")),
+    ARS(Locale("es", "AR"))
 
 }

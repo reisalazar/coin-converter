@@ -1,12 +1,10 @@
 package br.com.dio.coinconverter.ui
 
 import android.os.Bundle
-import android.util.Log
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doAfterTextChanged
-import br.com.dio.coinconverter.core.extensions.createDialog
-import br.com.dio.coinconverter.core.extensions.createProgressDialog
+import br.com.dio.coinconverter.core.extensions.*
 import br.com.dio.coinconverter.data.model.Coin
 import br.com.dio.coinconverter.databinding.ActivityMainBinding
 import br.com.dio.coinconverter.presentation.MainViewModel
@@ -24,8 +22,36 @@ class MainActivity : AppCompatActivity() {
 
         bindingAdapters()
         bindingListeners()
+        bindObserve()
 
-        viewModel.getExchangeValue("USD-BRL")
+
+    }
+    private fun bindingAdapters() {
+        val list = Coin.values()
+        val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, list)
+
+        binding.tvFrom.setAdapter(adapter)
+        binding.tvTo.setAdapter(adapter)
+
+        binding.tvFrom.setText(Coin.USD.name, false)
+        binding.tvTo.setText(Coin.BRL.name, false)
+    }
+
+    private fun bindingListeners() {
+
+        binding.tilValue.editText?.doAfterTextChanged {
+            binding.btnConverter.isEnabled = it != null && it.toString().isNotEmpty()
+        }
+        binding.btnConverter.setOnClickListener() {
+            it.hideSoftKeyboard()
+
+            val search = "${binding.tilFrom.text}-${binding.tvTo.text}"
+            viewModel.getExchangeValue(search)
+        }
+    }
+
+    private fun bindObserve() {
+
         viewModel.state.observe(this) {
             when (it) {
                 MainViewModel.State.Loading -> dialog.show()
@@ -35,33 +61,19 @@ class MainActivity : AppCompatActivity() {
                         setMessage(it.throwable.message)
                     }.show()
                 }
-                is MainViewModel.State.Success -> {
-                    dialog.dismiss()
-                    Log.e("TAG", "onCreate:  ${it.value}")
-                }
+                is MainViewModel.State.Success -> success(it)
             }
         }
-
-
     }
 
-    private fun bindingListeners() {
-        binding.btnConverter.setOnClickListener() {
+    private fun success(it: MainViewModel.State.Success) {
+        dialog.dismiss()
 
-        }
-        binding.tilValue.editText?.doAfterTextChanged {
-            binding.btnConverter.isEnabled = it != null && it.toString().isNotEmpty()
-        }
-    }
+        val selectedCoin = binding.tilTo.text
+        val coin = Coin.values().find { it.name == selectedCoin } ?: Coin.BRL
 
-    private fun bindingAdapters() {
-        val list = Coin.values()
-        val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, list)
+        val result = it.exchange.bid * binding.tilValue.text.toDouble()
 
-        binding.tvFrom.setAdapter(adapter)
-        binding.tvTo.setAdapter(adapter)
-
-        binding.tvFrom.setText(Coin.BRL.name, false)
-        binding.tvTo.setText(Coin.USD.name, false)
+        binding.tvResult.text = result.formatCurrency(coin.locale)
     }
 }
