@@ -9,21 +9,24 @@ import br.com.dio.coinconverter.databinding.ActivityHistoryBinding
 import br.com.dio.coinconverter.presentation.HistoryViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class HistoryActivity: AppCompatActivity() {
+class HistoryActivity : AppCompatActivity() {
 
     private val adapter by lazy { HistoryListAdapter() }
-    private val viewModel by viewModel<HistoryViewModel>()
     private val dialog by lazy { createProgressDialog() }
+    private val viewModel by viewModel<HistoryViewModel>()
     private val binding by lazy { ActivityHistoryBinding.inflate(layoutInflater) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-
         binding.rvHistory.adapter = adapter
         binding.rvHistory.addItemDecoration(
-            DividerItemDecoration(this, DividerItemDecoration.HORIZONTAL))
+            DividerItemDecoration(this, DividerItemDecoration.HORIZONTAL)
+        )
+
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.setDisplayShowHomeEnabled(true)
 
         bindObserve()
 
@@ -32,7 +35,7 @@ class HistoryActivity: AppCompatActivity() {
 
     private fun bindObserve() {
         viewModel.state.observe(this) {
-            when(it) {
+            when (it) {
                 HistoryViewModel.State.Loading -> dialog.show()
                 is HistoryViewModel.State.Error -> {
                     dialog.dismiss()
@@ -42,8 +45,8 @@ class HistoryActivity: AppCompatActivity() {
                 }
                 is HistoryViewModel.State.Success -> {
                     dialog.dismiss()
-                        adapter.submitList(it.list)
-                    }
+                    adapter.submitList(it.list)
+                }
             }
         }
     }

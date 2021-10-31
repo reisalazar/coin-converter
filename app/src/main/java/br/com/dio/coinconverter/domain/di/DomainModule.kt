@@ -8,6 +8,7 @@ import org.koin.core.module.Module
 import org.koin.dsl.module
 
 object DomainModule {
+
     fun load() {
         loadKoinModules(useCaseModules())
     }
@@ -16,7 +17,7 @@ object DomainModule {
         return module {
             factory { ListExchangeUseCase(get()) }
             factory { SaveExchangeUseCase(get()) }
-            factory { GetExchangeValueUseCase(get())}
+            factory { GetExchangeValueUseCase(get()) }
         }
     }
 }

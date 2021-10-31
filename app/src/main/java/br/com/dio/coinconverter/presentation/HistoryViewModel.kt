@@ -1,6 +1,12 @@
 package br.com.dio.coinconverter.presentation
 
-import androidx.lifecycle.*
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.OnLifecycleEvent
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import br.com.dio.coinconverter.data.model.ExchangeResponseValue
 import br.com.dio.coinconverter.domain.ListExchangeUseCase
 import kotlinx.coroutines.Dispatchers
@@ -11,16 +17,16 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 
 class HistoryViewModel(
-    private val ListExchangeUseCase: ListExchangeUseCase
-): ViewModel(), LifecycleObserver {
+    private val listExchangeUseCase: ListExchangeUseCase
+) : ViewModel(), LifecycleObserver {
 
     private val _state = MutableLiveData<State>()
     val state: LiveData<State> = _state
 
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
-    private fun getExchangeValue(coins: String) {
+    private fun getExchanges() {
         viewModelScope.launch {
-            ListExchangeUseCase()
+            listExchangeUseCase()
                 .flowOn(Dispatchers.Main)
                 .onStart {
                     _state.value = State.Loading
@@ -37,7 +43,7 @@ class HistoryViewModel(
     sealed class State {
         object Loading : State()
 
-        data class Success(val list: List<ExchangeResponseValue>): State()
+        data class Success(val list: List<ExchangeResponseValue>) : State()
         data class Error(val throwable: Throwable) : State()
     }
 }

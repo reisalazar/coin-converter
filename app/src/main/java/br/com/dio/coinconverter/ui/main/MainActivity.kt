@@ -1,4 +1,4 @@
-package br.com.dio.coinconverter.ui
+package br.com.dio.coinconverter.ui.main
 
 import android.content.Intent
 import android.os.Bundle
@@ -8,7 +8,11 @@ import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doAfterTextChanged
 import br.com.dio.coinconverter.R
-import br.com.dio.coinconverter.core.extensions.*
+import br.com.dio.coinconverter.core.extensions.createDialog
+import br.com.dio.coinconverter.core.extensions.createProgressDialog
+import br.com.dio.coinconverter.core.extensions.formatCurrency
+import br.com.dio.coinconverter.core.extensions.hideSoftKeyboard
+import br.com.dio.coinconverter.core.extensions.text
 import br.com.dio.coinconverter.data.model.Coin
 import br.com.dio.coinconverter.databinding.ActivityMainBinding
 import br.com.dio.coinconverter.presentation.MainViewModel
@@ -25,10 +29,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        bindingAdapters()
-        bindingListeners()
+        bindAdapters()
+        bindListeners()
         bindObserve()
 
+        setSupportActionBar(binding.toolbar)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -37,13 +42,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.action_hisotry) {
+        if (item.itemId == R.id.action_history) {
             startActivity(Intent(this, HistoryActivity::class.java))
         }
         return super.onOptionsItemSelected(item)
     }
 
-    private fun bindingAdapters() {
+    private fun bindAdapters() {
         val list = Coin.values()
         val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, list)
 
@@ -54,28 +59,30 @@ class MainActivity : AppCompatActivity() {
         binding.tvTo.setText(Coin.BRL.name, false)
     }
 
-    private fun bindingListeners() {
+    private fun bindListeners() {
         binding.tilValue.editText?.doAfterTextChanged {
             binding.btnConverter.isEnabled = it != null && it.toString().isNotEmpty()
             binding.btnSave.isEnabled = false
         }
-        binding.btnConverter.setOnClickListener() {
+
+        binding.btnConverter.setOnClickListener {
             it.hideSoftKeyboard()
 
-            val search = "${binding.tilFrom.text}-${binding.tvTo.text}"
+            val search = "${binding.tilFrom.text}-${binding.tilTo.text}"
+
             viewModel.getExchangeValue(search)
         }
 
         binding.btnSave.setOnClickListener {
             val value = viewModel.state.value
             (value as? MainViewModel.State.Success)?.let {
-                viewModel.saveExchange(it.exchange)
+                val exchange = it.exchange.copy(bid = it.exchange.bid * binding.tilValue.text.toDouble())
+                viewModel.saveExchange(exchange)
             }
         }
     }
 
     private fun bindObserve() {
-
         viewModel.state.observe(this) {
             when (it) {
                 MainViewModel.State.Loading -> dialog.show()
@@ -89,7 +96,7 @@ class MainActivity : AppCompatActivity() {
                 MainViewModel.State.Saved -> {
                     dialog.dismiss()
                     createDialog {
-                        setMessage("Item salvo com sucesso!")
+                        setMessage("item salvo com sucesso!")
                     }.show()
                 }
             }
