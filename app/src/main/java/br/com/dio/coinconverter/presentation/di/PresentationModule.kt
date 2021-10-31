@@ -1,5 +1,6 @@
 package br.com.dio.coinconverter.presentation.di
 
+import br.com.dio.coinconverter.presentation.HistoryViewModel
 import br.com.dio.coinconverter.presentation.MainViewModel
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.context.loadKoinModules
@@ -13,7 +14,8 @@ object PresentationModule {
 
     private fun viewModelModules(): Module {
         return module {
-            viewModel { MainViewModel(get()) }
+            viewModel { MainViewModel(get(), get()) }
+            viewModel { HistoryViewModel(get()) }
         }
 
     }
